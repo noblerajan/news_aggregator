@@ -7,12 +7,12 @@ requests.packages.urllib3.disable_warnings()
 
 def news_list(request):
         titles = set()
-        unique_headlines = set()
+        unique_headlines = []
         headlines = Headline.objects.all()[::-1]
         for headline in headlines:
                 if headline.title not in titles:
                         titles.add(headline.title)
-                        unique_headlines.add(headline)
+                        unique_headlines.append(headline)
         context = {
 		'object_list': unique_headlines,
 	}
