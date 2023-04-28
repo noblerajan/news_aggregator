@@ -6,35 +6,33 @@ from news.models import Headline
 requests.packages.urllib3.disable_warnings()
 
 def news_list(request):
-	headlines = Headline.objects.all()[::-1]
-	context = {
-		'object_list': headlines,
+        titles = set()
+        unique_headlines = set()
+        headlines = Headline.objects.all()[::-1]
+        for headline in headlines:
+                if headline.title not in titles:
+                        titles.add(headline.title)
+                        unique_headlines.add(headline)
+        context = {
+		'object_list': unique_headlines,
 	}
-	return render(request, "news/home.html", context)
+        return render(request, "news/home.html", context)
 
 def scrape(request):
 	session = requests.Session()
 	session.headers = {"User-Agent": "Googlebot/2.1 (+http://www.google.com/bot.html)"}
-	url = "https://www.theonion.com/"
+	url = "https://www.cnn.com/"
 
 	content = session.get(url, verify=False).content
-	breakpoint()
 	soup = BSoup(content, "html.parser")
-	News = soup.find_all('div', {"class":"sc-1pw4fyi-3"})
-	breakpoint()
-	for artcile in News:
-		main = artcile.find_all('a')[0]
-		breakpoint()
-		#link = main['href']
-		link = "https://www.theonion.com/tucker-carlson-exclusive-interview-1850375489"
-		#image_src = str(main.find('img')['srcset']).split(" ")[-4]
-		image_src = "https://i.kinja-img.com/gawker-media/image/upload/…r,q_60,w_965/92e810db9c01437cb5bf39e6a08f5ff1.jpg"
-		#title = main['title']
-		title = "The Onion’s Exclusive Interview With Tucker Carlson"
+	articles = soup.find_all('div', {"class":"container_lead-package"})
+	for article in articles:
+		title = article.find("div", class_="container__headline").get_text()
+		link = url + article.find("a", class_="container__link")["href"]
+		image_src = article.find("img", class_="image__dam-img")["src"]
 		new_headline = Headline()
 		new_headline.title = title
 		new_headline.url = link
 		new_headline.image = image_src
 		new_headline.save()
 	return redirect("../")
-
