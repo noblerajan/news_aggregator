@@ -27,12 +27,19 @@ def scrape(request):
 	soup = BSoup(content, "html.parser")
 	articles = soup.find_all('div', {"class":"container_lead-package"})
 	for article in articles:
-		title = article.find("div", class_="container__headline").get_text()
-		link = url + article.find("a", class_="container__link")["href"]
-		image_src = article.find("img", class_="image__dam-img")["src"]
-		new_headline = Headline()
-		new_headline.title = title
-		new_headline.url = link
-		new_headline.image = image_src
-		new_headline.save()
+                title = ""
+                if article.find("div", class_="container__headline") is not None:
+                        title = article.find("div", class_="container__headline").get_text()
+                link = ""
+                if article.find("a", class_="container__link") is not None:
+                        link = url + article.find("a", class_="container__link")["href"]
+                image_src = ""
+                if article.find("img", class_="image__dam-img") is not None:
+                        image_src = article.find("img", class_="image__dam-img")["src"]
+                if title is not "":
+                        new_headline = Headline()
+                        new_headline.title = title
+                        new_headline.url = link
+                        new_headline.image = image_src
+                        new_headline.save()
 	return redirect("../")
